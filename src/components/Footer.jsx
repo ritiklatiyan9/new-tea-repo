@@ -13,7 +13,7 @@ const OFFER_ITEMS = [
 
 function OfferRibbon() {
     const repeated = [...OFFER_ITEMS, ...OFFER_ITEMS, ...OFFER_ITEMS];
-    const [trackRef, duration] = useMarqueeDuration(3);
+    const [trackRef, duration] = useMarqueeDuration(7);
     return (
         <div className="bg-[#385040] text-white py-2.5 overflow-hidden relative">
             <div ref={trackRef} className="flex whitespace-nowrap animate-ticker" style={{ animationDuration: `${duration}s` }}>
