@@ -1,12 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
-import { ArrowLeft, Loader2, CreditCard, Banknote, ShieldCheck, Leaf, MapPin, AlertCircle, Phone, Mail, User, Truck, Clock, Gift } from 'lucide-react';
+import { ArrowLeft, Loader2, CreditCard, Banknote, ShieldCheck, Leaf, MapPin, AlertCircle, Mail, User, Truck, Clock, Gift } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { cartAPI } from '@/services/cartAPI';
 import { guestCartService } from '@/services/guestCartService';
 import { orderAPI } from '@/services/orderAPI';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from 'sonner';
+import { getSugarOffer } from '@/utils/sugarOffer';
 
 
 
@@ -16,7 +17,7 @@ const PAYMENT_METHODS = [
 
 const InputField = ({ label, name, type = 'text', placeholder, value, onChange, error, colSpan = '', autoComplete, required }) => (
     <div className={colSpan}>
-        <label className="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2">
+        <label className="block text-[11px] font-bold uppercase tracking-widest text-gray-500 mb-1.5">
             {label}
             {required && <span className="text-red-500 ml-1">*</span>}
         </label>
@@ -27,7 +28,7 @@ const InputField = ({ label, name, type = 'text', placeholder, value, onChange, 
             onChange={onChange}
             placeholder={placeholder}
             autoComplete={autoComplete}
-            className={`w-full px-4 py-3 rounded-lg border ${error ? 'border-red-400 bg-red-50' : 'border-gray-200'} text-sm focus:outline-none focus:border-[#385040] focus:ring-1 focus:ring-[#385040]/20 transition-colors`}
+            className={`w-full px-3.5 py-2.5 rounded-lg border ${error ? 'border-red-400 bg-red-50' : 'border-gray-200'} text-sm focus:outline-none focus:border-[#385040] focus:ring-1 focus:ring-[#385040]/20 transition-colors`}
         />
         {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
     </div>
@@ -59,7 +60,6 @@ export default function Checkout() {
     const [cart, setCart] = useState(null);
     const [loading, setLoading] = useState(true);
     const [placing, setPlacing] = useState(false);
-    const [paymentMethod, setPaymentMethod] = useState('online');
     const [errors, setErrors] = useState({});
 
     const [address, setAddress] = useState({
@@ -72,12 +72,8 @@ export default function Checkout() {
         country: 'India',
     });
 
-    // Guest contact info
-    const [guestContact, setGuestContact] = useState({
-        mobile: '',
-        name: '',
-        email: '',
-    });
+    // Guest contact email — name/phone come from the shipping address, no need to ask twice
+    const [guestContact, setGuestContact] = useState({ email: '' });
 
     // ── Shipping / Courier Selection State ───────────────────
     const [shippingCouriers, setShippingCouriers] = useState([]);
@@ -196,8 +192,7 @@ export default function Checkout() {
 
     const handleGuestChange = (e) => {
         const { name, value } = e.target;
-        const finalValue = name === 'mobile' ? sanitizePhone(value) : value;
-        setGuestContact(prev => ({ ...prev, [name]: finalValue }));
+        setGuestContact(prev => ({ ...prev, [name]: value }));
         if (errors[name]) setErrors(prev => ({ ...prev, [name]: '' }));
     };
 
@@ -215,12 +210,8 @@ export default function Checkout() {
         // Courier selection validation
         if (!selectedCourier) errs.courier = 'Please select a delivery option';
 
-        // Guest-specific validation
+        // Guest-specific validation (name/phone already validated above via the shared address fields)
         if (!isAuthenticated) {
-            if (!guestContact.mobile.trim()) errs.mobile = 'Mobile number is required';
-            else if (!/^[6-9]\d{9}$/.test(guestContact.mobile.trim())) errs.mobile = 'Enter a valid 10-digit mobile number';
-
-            if (!guestContact.name.trim()) errs.name = 'Name is required';
             if (!guestContact.email.trim()) errs.email = 'Email is required';
             else if (!/\S+@\S+\.\S+/.test(guestContact.email)) errs.email = 'Enter a valid email address';
         }
@@ -368,8 +359,8 @@ export default function Checkout() {
                 items,
                 shippingAddress,
                 guestContact: {
-                    mobile: guestContact.mobile.trim(),
-                    name: guestContact.name.trim(),
+                    mobile: shippingAddress.phone,
+                    name: shippingAddress.fullName,
                     email: guestContact.email.trim()
                 },
                 actualShippingCost: selectedCourier.rate,
@@ -392,8 +383,8 @@ export default function Checkout() {
             description: `Order #${orderNumber}`,
             order_id: razorpayOrderId,
             prefill: {
-                name: guestContact.name || 'Guest',
-                contact: guestContact.mobile,
+                name: shippingAddress.fullName || 'Guest',
+                contact: shippingAddress.phone,
                 email: guestContact.email || '',
             },
             theme: { color: '#385040' },
@@ -467,77 +458,39 @@ export default function Checkout() {
     }
 
     const totalPrice = cart?.totalPrice || 0;
-    const shipping = selectedCourier ? selectedCourier.rate : 0;
-    const total = totalPrice + shipping;
+    const shipping = selectedCourier ? selectedCourier.rate : 0; // real courier cost — on us, not charged to the customer
+    const total = totalPrice;
 
-    // ── Sugar offer: requires ≥ 1 KG of tea (4 × 250 g packets) ──
-    const parseWeightGrams = (variantSize, productName) => {
-        const sources = [variantSize, productName].filter(Boolean);
-        for (const src of sources) {
-            const s = src.toLowerCase();
-            const kgMatch = s.match(/(\d+\.?\d*)\s*kg/);
-            if (kgMatch) return parseFloat(kgMatch[1]) * 1000;
-            const gMatch = s.match(/(\d+\.?\d*)\s*g(?:ram)?/);
-            if (gMatch) return parseFloat(gMatch[1]);
-        }
-        return 0;
-    };
-    const totalWeightGrams = (cart?.items || []).reduce(
-        (sum, item) => sum + parseWeightGrams(item.variantSize || item.size, item.product?.name) * item.quantity,
-        0
-    );
-    const qualifiesForSugar = totalWeightGrams >= 1000;
+    // ── Sugar offer: 1 kg free sugar per full 1 kg of tea, repeating ──
+    const { sugarKg, remainingG } = getSugarOffer(cart?.items || []);
+    const qualifiesForSugar = sugarKg > 0;
 
     return (
-        <div className="min-h-screen bg-[#F9F9F9] pt-24 pb-16 font-sans text-[#1A1A1A]">
+        <div className="min-h-screen bg-[#F9F9F9] pt-28 pb-16 font-sans text-[#1A1A1A]">
             <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
 
                 {/* Header */}
-                <div className="mb-8">
-                    <Link to="/cart" className="inline-flex mt-4 items-center gap-2 text-sm font-bold text-gray-500 hover:text-[#385040] transition-colors uppercase tracking-wide mb-4">
+                <div className="mb-5">
+                    <Link to="/cart" className="inline-flex items-center gap-2 text-sm font-bold text-gray-500 hover:text-[#385040] transition-colors uppercase tracking-wide mb-3">
                         <ArrowLeft className="w-4 h-4" /> Back to Cart
                     </Link>
-                    <h1 className="font-display md:mt-10 text-3xl font-bold">Checkout</h1>
+                    <h1 className="font-display text-3xl font-bold">Checkout</h1>
                 </div>
 
                 <div className="lg:grid lg:grid-cols-12 gap-8 items-start">
 
                     {/* LEFT: Form */}
-                    <div className="lg:col-span-7 space-y-8">
+                    <div className="lg:col-span-7 space-y-5">
 
-                        {/* Guest Contact Info (only for non-authenticated) */}
-                        {!isAuthenticated && (
-                            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-white rounded-xl border border-amber-200 shadow-sm p-6 sm:p-8">
-                                <div className="flex items-center gap-3 mb-2">
-                                    <div className="w-8 h-8 rounded-full bg-amber-500 text-white flex items-center justify-center text-sm font-bold">
-                                        <Phone className="w-4 h-4" />
-                                    </div>
-                                    <h2 className="font-display text-xl font-bold">Guest Checkout</h2>
-                                </div>
-                                <p className="text-xs text-gray-400 mb-6">Provide your mobile number to track your order. No account needed!</p>
+                        {/* Shipping Address (+ contact email for guests, folded in — no need to re-ask for name/phone) */}
+                        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 sm:p-6">
+                            <div className="flex items-center gap-3 mb-4">
+                                <div className="w-7 h-7 rounded-full bg-[#385040] text-white flex items-center justify-center text-xs font-bold">1</div>
+                                <h2 className="font-display text-lg font-bold">{isAuthenticated ? 'Shipping Address' : 'Contact & Shipping Address'}</h2>
+                            </div>
 
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    <InputField
-                                        label="Mobile Number"
-                                        name="mobile"
-                                        type="tel"
-                                        placeholder="9999999999"
-                                        value={guestContact.mobile}
-                                        onChange={handleGuestChange}
-                                        error={errors.mobile}
-                                        autoComplete="tel"
-                                        required
-                                    />
-                                    <InputField
-                                        label="Name"
-                                        name="name"
-                                        placeholder="Your name"
-                                        value={guestContact.name}
-                                        onChange={handleGuestChange}
-                                        error={errors.name}
-                                        autoComplete="name"
-                                        required
-                                    />
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                {!isAuthenticated && (
                                     <InputField
                                         label="Email"
                                         name="email"
@@ -550,18 +503,7 @@ export default function Checkout() {
                                         colSpan="sm:col-span-2"
                                         required
                                     />
-                                </div>
-                            </motion.div>
-                        )}
-
-                        {/* Shipping Address */}
-                        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 sm:p-8">
-                            <div className="flex items-center gap-3 mb-6">
-                                <div className="w-8 h-8 rounded-full bg-[#385040] text-white flex items-center justify-center text-sm font-bold">{isAuthenticated ? '1' : '2'}</div>
-                                <h2 className="font-display text-xl font-bold">Shipping Address</h2>
-                            </div>
-
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                )}
                                 <InputField
                                     label="Full Name"
                                     name="fullName"
@@ -637,10 +579,10 @@ export default function Checkout() {
                         </motion.div>
 
                         {/* Delivery Options */}
-                        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 sm:p-8">
-                            <div className="flex items-center gap-3 mb-6">
-                                <div className="w-8 h-8 rounded-full bg-[#385040] text-white flex items-center justify-center text-sm font-bold">{isAuthenticated ? '2' : '3'}</div>
-                                <h2 className="font-display text-xl font-bold">Delivery Options</h2>
+                        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 sm:p-6">
+                            <div className="flex items-center gap-3 mb-4">
+                                <div className="w-7 h-7 rounded-full bg-[#385040] text-white flex items-center justify-center text-xs font-bold">2</div>
+                                <h2 className="font-display text-lg font-bold">Delivery Options</h2>
                             </div>
 
                             {!address.zipCode || address.zipCode.length < 6 ? (
@@ -666,31 +608,29 @@ export default function Checkout() {
                                                 type="button"
                                                 key={courier.courier_company_id}
                                                 onClick={() => setSelectedCourier(courier)}
-                                                className={`flex items-center gap-4 p-4 rounded-xl border transition-all text-left ${isSelected
+                                                className={`flex items-center gap-3 p-3.5 rounded-xl border transition-all text-left ${isSelected
                                                     ? 'border-[#385040] bg-[#385040]/5 shadow-sm'
                                                     : 'border-gray-200 hover:border-gray-300'
                                                     }`}
                                             >
-                                                <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${isSelected ? 'bg-[#385040] text-white' : 'bg-gray-100 text-gray-500'}`}>
-                                                    <Truck className="w-5 h-5" />
+                                                <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${isSelected ? 'bg-[#385040] text-white' : 'bg-gray-100 text-gray-500'}`}>
+                                                    <Truck className="w-4 h-4" />
                                                 </div>
-                                                <div className="flex-1">
+                                                <div className="flex-1 min-w-0">
                                                     <div className="flex items-center gap-2">
                                                         <p className="font-bold text-sm text-[#1A1A1A]">{courier.courier_name}</p>
                                                         {courier.recommended && (
                                                             <span className="text-[10px] font-semibold bg-green-100 text-green-700 px-1.5 py-0.5 rounded">Recommended</span>
                                                         )}
                                                     </div>
-                                                    <div className="flex items-center gap-3 mt-0.5">
-                                                        <span className="text-xs text-gray-400 flex items-center gap-1">
-                                                            <Clock className="w-3 h-3" />
-                                                            {courier.estimated_delivery_days} day{courier.estimated_delivery_days > 1 ? 's' : ''}
-                                                        </span>
-                                                    </div>
+                                                    <span className="text-xs text-gray-400 flex items-center gap-1 mt-0.5">
+                                                        <Clock className="w-3 h-3" />
+                                                        {courier.estimated_delivery_days} day{courier.estimated_delivery_days > 1 ? 's' : ''}
+                                                    </span>
                                                 </div>
-                                                <div className="text-right">
-                                                    <p className="font-bold text-sm text-[#1A1A1A]">₹{courier.rate.toFixed(2)}</p>
-                                                </div>
+                                                <span className="text-[10px] font-bold uppercase tracking-wide text-green-600 bg-green-50 border border-green-200 rounded-full px-2 py-0.5 shrink-0">
+                                                    Free
+                                                </span>
                                                 <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${isSelected ? 'border-[#385040]' : 'border-gray-300'}`}>
                                                     {isSelected && <div className="w-2.5 h-2.5 rounded-full bg-[#385040]" />}
                                                 </div>
@@ -708,55 +648,29 @@ export default function Checkout() {
                         </motion.div>
 
                         {/* Payment Method */}
-                        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 sm:p-8">
-                            <div className="flex items-center gap-3 mb-6">
-                                <div className="w-8 h-8 rounded-full bg-[#385040] text-white flex items-center justify-center text-sm font-bold">{isAuthenticated ? '3' : '4'}</div>
-                                <h2 className="font-display text-xl font-bold">Payment Method</h2>
+                        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 sm:p-6">
+                            <div className="flex items-center gap-3 mb-4">
+                                <div className="w-7 h-7 rounded-full bg-[#385040] text-white flex items-center justify-center text-xs font-bold">3</div>
+                                <h2 className="font-display text-lg font-bold">Payment Method</h2>
                             </div>
 
-                            <div className="grid gap-3">
-                                {PAYMENT_METHODS.map((method) => {
-                                    const isActive = paymentMethod === method.id;
-                                    return (
-                                        <button
-                                            key={method.id}
-                                            onClick={() => setPaymentMethod(method.id)}
-                                            className={`flex items-center gap-4 p-4 rounded-xl border transition-all text-left ${isActive
-                                                ? 'border-[#385040] bg-[#385040]/5 shadow-sm'
-                                                : 'border-gray-200 hover:border-gray-300'
-                                                }`}
-                                        >
-                                            <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${isActive ? 'bg-[#385040] text-white' : 'bg-gray-100 text-gray-500'}`}>
-                                                <method.icon className="w-5 h-5" />
-                                            </div>
-                                            <div>
-                                                <p className="font-bold text-sm text-[#1A1A1A]">{method.label}</p>
-                                                <p className="text-xs text-gray-400">
-                                                    {method.desc}
-                                                </p>
-                                            </div>
-                                            <div className={`ml-auto w-5 h-5 rounded-full border-2 flex items-center justify-center ${isActive ? 'border-[#385040]' : 'border-gray-300'}`}>
-                                                {isActive && <div className="w-2.5 h-2.5 rounded-full bg-[#385040]" />}
-                                            </div>
-                                        </button>
-                                    );
-                                })}
-                            </div>
-
-                            {paymentMethod === 'online' && (
-                                <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg flex items-start gap-2">
-                                    <ShieldCheck className="w-4 h-4 text-blue-600 mt-0.5 shrink-0" />
-                                    <p className="text-xs text-blue-700">
-                                        Your payment is secured by Razorpay. We support UPI, Credit/Debit Cards, Net Banking, and Wallets.
+                            <div className="flex items-center gap-3 p-3.5 rounded-xl border border-[#385040]/20 bg-[#385040]/5">
+                                <div className="w-9 h-9 rounded-lg bg-[#385040] text-white flex items-center justify-center shrink-0">
+                                    <CreditCard className="w-4 h-4" />
+                                </div>
+                                <div className="min-w-0">
+                                    <p className="font-bold text-sm text-[#1A1A1A]">{PAYMENT_METHODS[0].label}</p>
+                                    <p className="text-xs text-gray-500 flex items-center gap-1">
+                                        <ShieldCheck className="w-3 h-3 text-blue-600 shrink-0" /> Secured — UPI, Cards, Net Banking &amp; Wallets
                                     </p>
                                 </div>
-                            )}
+                            </div>
                         </motion.div>
                     </div>
 
                     {/* RIGHT: Order Summary */}
                     <div className="lg:col-span-5 mt-8 lg:mt-0">
-                        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 sm:p-8 sticky top-32">
+                        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 sm:p-6 sticky top-32">
                             <h2 className="font-display text-xl font-bold text-[#1A1A1A] mb-6 border-b border-gray-100 pb-4">Order Summary</h2>
 
                             {/* Items */}
@@ -781,24 +695,29 @@ export default function Checkout() {
                                     <span>Subtotal</span>
                                     <span className="font-bold">₹{totalPrice.toFixed(2)}</span>
                                 </div>
-                                <div className="flex justify-between text-sm text-gray-600">
+                                <div className="flex justify-between items-center text-sm text-gray-600">
                                     <span>Delivery Charge</span>
-                                    <span className={`font-bold`}>
-                                        {selectedCourier ? `₹${shipping.toFixed(2)}` : <span className="text-gray-400">Select courier</span>}
-                                    </span>
+                                    {selectedCourier ? (
+                                        <span className="flex items-center gap-2">
+                                            <span className="text-gray-400 line-through decoration-2">₹{shipping.toFixed(2)}</span>
+                                            <span className="text-[10px] font-bold uppercase tracking-wide text-green-600 bg-green-50 border border-green-200 rounded-full px-2 py-0.5">
+                                                Free — on us
+                                            </span>
+                                        </span>
+                                    ) : (
+                                        <span className="text-gray-400">Select courier</span>
+                                    )}
                                 </div>
                                 {qualifiesForSugar && (
                                     <div className="flex justify-between text-sm text-green-600">
-                                        <span className="flex items-center gap-1"><Gift className="w-3 h-3" /> Sugar (Free)</span>
+                                        <span className="flex items-center gap-1"><Gift className="w-3 h-3" /> Sugar × {sugarKg} Kg (Free)</span>
                                         <span className="font-bold">₹0.00</span>
                                     </div>
                                 )}
-                                {!qualifiesForSugar && (
-                                    <div className="flex items-center gap-2 text-xs text-amber-600 bg-amber-50 border border-amber-100 rounded-lg p-2 mt-1">
-                                        <Gift className="w-3.5 h-3.5 shrink-0" />
-                                        <span>Add {Math.max(1000 - totalWeightGrams, 0)} g more tea to get <strong>FREE 1 Kg Sugar!</strong></span>
-                                    </div>
-                                )}
+                                <div className="flex items-center gap-2 text-xs text-amber-600 bg-amber-50 border border-amber-100 rounded-lg p-2 mt-1">
+                                    <Gift className="w-3.5 h-3.5 shrink-0" />
+                                    <span>Add {remainingG} g more tea to get <strong>FREE {sugarKg + 1} Kg Sugar!</strong></span>
+                                </div>
                             </div>
 
                             <div className="border-t border-gray-100 pt-4 mb-6">
@@ -806,7 +725,7 @@ export default function Checkout() {
                                     <span className="text-base font-bold">Total</span>
                                     <span className="font-display text-3xl font-bold text-[#1A1A1A]">₹{total.toFixed(2)}</span>
                                 </div>
-                                <p className="text-[10px] text-gray-400 text-right mt-1">Inclusive of all taxes</p>
+                                <p className="text-[10px] text-gray-400 text-right mt-1">Inclusive of all taxes · Free delivery, on us</p>
                             </div>
 
                             <button
@@ -816,10 +735,8 @@ export default function Checkout() {
                             >
                                 {placing ? (
                                     <><Loader2 className="w-4 h-4 animate-spin" /> Processing...</>
-                                ) : paymentMethod === 'online' ? (
-                                    <><CreditCard className="w-4 h-4" /> Pay ₹{total.toFixed(2)}</>
                                 ) : (
-                                    <>Place Order</>
+                                    <><CreditCard className="w-4 h-4" /> Pay ₹{total.toFixed(2)}</>
                                 )}
                             </button>
 

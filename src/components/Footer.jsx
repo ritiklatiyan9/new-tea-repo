@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { Leaf, Instagram, Facebook, ArrowRight, Gift } from 'lucide-react';
 import { motion } from 'framer-motion';
 import chailogo from '../assets/chailogo.webp'
+import { useMarqueeDuration } from '../hooks/useMarqueeDuration';
 
 const OFFER_ITEMS = [
     { icon: '🎁', text: 'Buy 1 KG of tea & get FREE 1 KG Sugar!' },
@@ -12,9 +13,10 @@ const OFFER_ITEMS = [
 
 function OfferRibbon() {
     const repeated = [...OFFER_ITEMS, ...OFFER_ITEMS, ...OFFER_ITEMS];
+    const [trackRef, duration] = useMarqueeDuration(3);
     return (
         <div className="bg-[#385040] text-white py-2.5 overflow-hidden relative">
-            <div className="flex whitespace-nowrap animate-[ticker_28s_linear_infinite]">
+            <div ref={trackRef} className="flex whitespace-nowrap animate-ticker" style={{ animationDuration: `${duration}s` }}>
                 {repeated.map((item, i) => (
                     <span key={i} className="inline-flex items-center gap-2 mx-8 text-xs font-semibold tracking-wide">
                         <span>{item.icon}</span>

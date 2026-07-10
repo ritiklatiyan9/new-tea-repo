@@ -12,8 +12,6 @@ import SEOHelmet from '@/components/SEOHelmet';
 import { productAPI } from '@/services/productAPI';
 import OfferBanner from '@/components/OfferBanner';
 import OfferPopup from '@/components/OfferPopup';
-import { ShieldCheck, History, Leaf, Globe } from 'lucide-react';
-
 import videoStory from '@/assets/video-story.mp4';
 
 export default function Home() {
@@ -85,63 +83,6 @@ export default function Home() {
       {/* Hero Section — now isolated for performance */}
       <Hero />
 
-
-      {/* BRAND TRUST BAR SECTION */}
-      <div className="hidden md:flex py-6 sm:py-10 bg-[#385040] w-full justify-center border-t border-[#385040]/10 overflow-hidden">
-        <div className="max-w-7xl w-full px-6 sm:px-10 lg:px-20 flex flex-col md:flex-row items-center justify-between gap-8 lg:gap-20">
-          
-          {/* Left: Quote */}
-          <div className="w-full md:w-5/12 text-center md:text-left">
-            <p className="text-[#FAF9F6] text-lg sm:text-xl font-serif italic leading-relaxed">
-              “Brewing moments of togetherness with India's finest tea—a legacy of purity handed down through generations.”
-            </p>
-          </div>
-
-          {/* Right: Trust items Grid */}
-          <div className="w-full md:w-7/12 grid grid-cols-2 gap-x-8 gap-y-4 sm:gap-x-12 sm:gap-y-6">
-            <div className="flex items-start gap-4 group">
-              <div className="w-10 h-10 rounded-full border border-[#cbab63]/30 flex items-center justify-center text-[#cbab63] group-hover:bg-[#cbab63] group-hover:text-[#385040] transition-all duration-500 shrink-0">
-                <ShieldCheck size={20} strokeWidth={1.5} />
-              </div>
-              <div>
-                <h4 className="text-[#FAF9F6] font-bold text-xs tracking-widest uppercase mb-1">100% Organic</h4>
-                <p className="text-[#FAF9F6]/60 text-[10px] leading-relaxed">Purity in every leaf.</p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-4 group">
-              <div className="w-10 h-10 rounded-full border border-[#cbab63]/30 flex items-center justify-center text-[#cbab63] group-hover:bg-[#cbab63] group-hover:text-[#385040] transition-all duration-500 shrink-0">
-                <History size={20} strokeWidth={1.5} />
-              </div>
-              <div>
-                <h4 className="text-[#FAF9F6] font-bold text-xs tracking-widest uppercase mb-1">50yr Legacy</h4>
-                <p className="text-[#FAF9F6]/60 text-[10px] leading-relaxed">Trusted for decades.</p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-4 group">
-              <div className="w-10 h-10 rounded-full border border-[#cbab63]/30 flex items-center justify-center text-[#cbab63] group-hover:bg-[#cbab63] group-hover:text-[#385040] transition-all duration-500 shrink-0">
-                <Leaf size={20} strokeWidth={1.5} />
-              </div>
-              <div>
-                <h4 className="text-[#FAF9F6] font-bold text-xs tracking-widest uppercase mb-1">Estate Direct</h4>
-                <p className="text-[#FAF9F6]/60 text-[10px] leading-relaxed">Fresh from Assam.</p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-4 group">
-              <div className="w-10 h-10 rounded-full border border-[#cbab63]/30 flex items-center justify-center text-[#cbab63] group-hover:bg-[#cbab63] group-hover:text-[#385040] transition-all duration-500 shrink-0">
-                <Globe size={20} strokeWidth={1.5} />
-              </div>
-              <div>
-                <h4 className="text-[#FAF9F6] font-bold text-xs tracking-widest uppercase mb-1">Eco-Conscious</h4>
-                <p className="text-[#FAF9F6]/60 text-[10px] leading-relaxed">Carbon-neutral path.</p>
-              </div>
-            </div>
-          </div>
-
-        </div>
-      </div>
 
       {/* PRODUCTS SECTION */}
       <section ref={collectionsRef} className="py-12 mt-0 md:mt-10 sm:py-32 bg-white md:rounded-t-[2rem] sm:rounded-t-[4rem] -mt-10 relative z-10 overflow-hidden">
