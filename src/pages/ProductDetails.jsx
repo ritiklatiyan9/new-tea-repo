@@ -160,11 +160,7 @@ export default function ProductDetails() {
                         "price": selectedVariant ? selectedVariant.price : product.price,
                         "availability": (selectedVariant?.stock > 0 || product.stock > 0) ? "https://schema.org/InStock" : "https://schema.org/OutOfStock"
                     },
-                    "aggregateRating": {
-                        "@type": "AggregateRating",
-                        "ratingValue": product.rating || "4.8",
-                        "reviewCount": product.reviews || "128"
-                    }
+                    
                 }}
             />
 
@@ -250,14 +246,7 @@ export default function ProductDetails() {
                                 animate={{ opacity: 1, x: 0 }}
                                 transition={{ duration: 0.6, delay: 0.2 }}
                             >
-                                <div className="flex items-center gap-2 mb-4">
-                                    <div className="flex text-amber-500">
-                                        {[...Array(5)].map((_, i) => (
-                                            <Star key={i} className={`w-4 h-4 ${i < Math.floor(product.rating) ? 'fill-current' : 'text-gray-200'}`} />
-                                        ))}
-                                    </div>
-                                    <span className="text-sm font-semibold text-gray-500">{product.rating} (128 reviews)</span>
-                                </div>
+                                
 
                                 <h1 className="font-display text-4xl lg:text-6xl font-black text-[#1A1A1A] leading-tight mb-4">
                                     {product.name}
@@ -378,7 +367,7 @@ export default function ProductDetails() {
 
                         <div className="grid lg:grid-cols-2">
                             <div className="p-10 lg:p-16 flex flex-col justify-center relative z-10">
-                                <span className="text-[#D4F57B] font-display font-bold text-6xl opacity-20 absolute top-4 left-4">1912</span>
+                              
 
                                 <h2 className="font-display text-3xl lg:text-5xl font-bold mb-6">
                                     Taste the <span className="text-[#D4F57B]">Legacy</span>
