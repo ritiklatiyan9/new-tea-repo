@@ -1,6 +1,8 @@
 import { Leaf, ShieldCheck, Coffee, Star } from 'lucide-react';
+import { useMarqueeDuration } from '../hooks/useMarqueeDuration';
 
 export default function TopRibbon() {
+    const [trackRef, duration] = useMarqueeDuration(2);
     const announcements = [
         { text: "50 Years of Legacy", icon: Star },
         { text: "From One Estate, One Promise", icon: Leaf },
@@ -11,7 +13,7 @@ export default function TopRibbon() {
 
     return (
         <div className="bg-[#B08848] text-white py-2.5 overflow-hidden whitespace-nowrap border-b border-white/5 fixed top-0 left-0 right-0 z-[60]">
-            <div className="inline-flex gap-8 sm:gap-24 items-center px-4 animate-marquee">
+            <div ref={trackRef} className="inline-flex gap-8 sm:gap-24 items-center px-4 animate-marquee" style={{ animationDuration: `${duration}s` }}>
                 {announcements.map((item, index) => {
                     const Icon = item.icon;
                     return (

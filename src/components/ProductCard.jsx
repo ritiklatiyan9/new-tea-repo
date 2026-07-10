@@ -112,10 +112,7 @@ export default function ProductCard({ product, index }) {
                             {name}
                         </h3>
                     </div>
-                    <div className="flex items-center gap-1 bg-amber-50 dark:bg-amber-900/20 px-2 py-1 rounded-lg flex-shrink-0 ml-2">
-                        <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
-                        <span className="text-xs font-bold text-foreground">{rating}</span>
-                    </div>
+                    
                 </div>
 
                 {/* Offer Badge Integration */}

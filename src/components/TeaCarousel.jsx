@@ -8,6 +8,11 @@ import video2 from '../assets/video2.mp4';
 
 const teaImages = [
     {
+        url: '/3rd.mp4', // served from public/
+        title: "Crafted to Perfection",
+        desc: "From leaf to cup — witness the artistry behind every Borsillah blend."
+    },
+    {
         url: video2,
         title: "Modern Brewing",
         desc: "Blending traditional techniques with modern perfection for the ultimate tea experience."
