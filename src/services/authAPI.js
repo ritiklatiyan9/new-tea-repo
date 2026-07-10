@@ -2,7 +2,7 @@ import axios from 'axios';
 import { refreshAccessToken, clearSession } from './tokenRefresh';
 
 // Backend URL from environment variables
-const BASE_URL = import.meta.env.VITE_API_URL || 'https://mern-tea-backend.onrender.com/api';
+const BASE_URL = import.meta.env.VITE_API_URL || 'https://mern-tea-backend.vercel.app/api';
 const API_URL = `${BASE_URL}/auth`;
 
 const api = axios.create({

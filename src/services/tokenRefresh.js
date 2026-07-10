@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const BASE_URL = import.meta.env.VITE_API_URL || 'https://mern-tea-backend.onrender.com/api';
+const BASE_URL = import.meta.env.VITE_API_URL || 'https://mern-tea-backend.vercel.app/api';
 
 // ONE in-flight refresh shared across every axios instance. Without this, the
 // separate authAPI/adminAPI instances each refresh independently; on a reload

@@ -1,7 +1,7 @@
 import { adminAxiosInstance as api } from './adminAPI';
 import axios from 'axios';
 
-const BASE_URL = import.meta.env.VITE_API_URL || 'https://mern-tea-backend.onrender.com/api';
+const BASE_URL = import.meta.env.VITE_API_URL || 'https://mern-tea-backend.vercel.app/api';
 
 export const orderAPI = {
     // ── Authenticated User Routes ────────────────────────────
