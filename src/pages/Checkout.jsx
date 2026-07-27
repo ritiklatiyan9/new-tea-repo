@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
-import { ArrowLeft, Loader2, CreditCard, Banknote, ShieldCheck, Leaf, MapPin, AlertCircle, Mail, User, Truck, Clock, Gift } from 'lucide-react';
+import { ArrowLeft, Loader2, CreditCard, Banknote, ShieldCheck, Leaf, MapPin, AlertCircle, Mail, User, Truck, Gift } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { cartAPI } from '@/services/cartAPI';
 import { guestCartService } from '@/services/guestCartService';
@@ -14,6 +14,45 @@ import { getSugarOffer } from '@/utils/sugarOffer';
 const PAYMENT_METHODS = [
     { id: 'online', label: 'Pay Online (Razorpay)', icon: CreditCard, desc: 'UPI, Cards, Net Banking' },
 ];
+
+const INDIA_LOCATIONS = {
+    'Andhra Pradesh': ['Amaravati', 'Visakhapatnam', 'Vijayawada', 'Guntur', 'Tirupati', 'Nellore'],
+    'Arunachal Pradesh': ['Itanagar', 'Naharlagun', 'Pasighat', 'Tawang'],
+    Assam: ['Guwahati', 'Dibrugarh', 'Silchar', 'Jorhat', 'Tezpur'],
+    Bihar: ['Patna', 'Gaya', 'Muzaffarpur', 'Bhagalpur', 'Darbhanga'],
+    Chhattisgarh: ['Raipur', 'Bhilai', 'Bilaspur', 'Korba', 'Durg'],
+    Goa: ['Panaji', 'Margao', 'Vasco da Gama', 'Mapusa'],
+    Gujarat: ['Ahmedabad', 'Surat', 'Vadodara', 'Rajkot', 'Gandhinagar'],
+    Haryana: ['Gurugram', 'Faridabad', 'Panipat', 'Ambala', 'Hisar'],
+    'Himachal Pradesh': ['Shimla', 'Dharamshala', 'Solan', 'Mandi'],
+    Jharkhand: ['Ranchi', 'Jamshedpur', 'Dhanbad', 'Bokaro'],
+    Karnataka: ['Bengaluru', 'Mysuru', 'Mangaluru', 'Hubballi', 'Belagavi'],
+    Kerala: ['Thiruvananthapuram', 'Kochi', 'Kozhikode', 'Thrissur', 'Kollam'],
+    'Madhya Pradesh': ['Bhopal', 'Indore', 'Jabalpur', 'Gwalior', 'Ujjain'],
+    Maharashtra: ['Mumbai', 'Pune', 'Nagpur', 'Nashik', 'Thane', 'Aurangabad'],
+    Manipur: ['Imphal', 'Thoubal', 'Bishnupur'],
+    Meghalaya: ['Shillong', 'Tura', 'Nongstoin'],
+    Mizoram: ['Aizawl', 'Lunglei', 'Champhai'],
+    Nagaland: ['Kohima', 'Dimapur', 'Mokokchung'],
+    Odisha: ['Bhubaneswar', 'Cuttack', 'Rourkela', 'Puri', 'Sambalpur'],
+    Punjab: ['Ludhiana', 'Amritsar', 'Jalandhar', 'Patiala', 'Chandigarh'],
+    Rajasthan: ['Jaipur', 'Jodhpur', 'Udaipur', 'Kota', 'Ajmer'],
+    Sikkim: ['Gangtok', 'Namchi', 'Gyalshing'],
+    'Tamil Nadu': ['Chennai', 'Coimbatore', 'Madurai', 'Tiruchirappalli', 'Salem'],
+    Telangana: ['Hyderabad', 'Warangal', 'Nizamabad', 'Karimnagar'],
+    Tripura: ['Agartala', 'Udaipur', 'Dharmanagar'],
+    'Uttar Pradesh': ['Lucknow', 'Noida', 'Ghaziabad', 'Kanpur', 'Agra', 'Varanasi', 'Prayagraj', 'Meerut'],
+    Uttarakhand: ['Dehradun', 'Haridwar', 'Haldwani', 'Roorkee'],
+    'West Bengal': ['Kolkata', 'Siliguri', 'Howrah', 'Durgapur', 'Asansol'],
+    'Andaman and Nicobar Islands': ['Port Blair'],
+    Chandigarh: ['Chandigarh'],
+    'Dadra and Nagar Haveli and Daman and Diu': ['Daman', 'Silvassa'],
+    Delhi: ['New Delhi', 'Delhi'],
+    'Jammu and Kashmir': ['Srinagar', 'Jammu', 'Anantnag'],
+    Ladakh: ['Leh', 'Kargil'],
+    Lakshadweep: ['Kavaratti'],
+    Puducherry: ['Puducherry', 'Karaikal', 'Mahe'],
+};
 
 const InputField = ({ label, name, type = 'text', placeholder, value, onChange, error, colSpan = '', autoComplete, required }) => (
     <div className={colSpan}>
@@ -30,6 +69,26 @@ const InputField = ({ label, name, type = 'text', placeholder, value, onChange, 
             autoComplete={autoComplete}
             className={`w-full px-3.5 py-2.5 rounded-lg border ${error ? 'border-red-400 bg-red-50' : 'border-gray-200'} text-sm focus:outline-none focus:border-[#385040] focus:ring-1 focus:ring-[#385040]/20 transition-colors`}
         />
+        {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
+    </div>
+);
+
+const SelectField = ({ label, name, value, onChange, error, options, placeholder, disabled = false, colSpan = '', required }) => (
+    <div className={colSpan}>
+        <label className="block text-[11px] font-bold uppercase tracking-widest text-gray-500 mb-1.5">
+            {label}
+            {required && <span className="text-red-500 ml-1">*</span>}
+        </label>
+        <select
+            name={name}
+            value={value}
+            onChange={onChange}
+            disabled={disabled}
+            className={`w-full px-3.5 py-2.5 rounded-lg border ${error ? 'border-red-400 bg-red-50' : 'border-gray-200 bg-white'} text-sm focus:outline-none focus:border-[#385040] focus:ring-1 focus:ring-[#385040]/20 transition-colors disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400`}
+        >
+            <option value="">{placeholder}</option>
+            {options.map((option) => <option key={option} value={option}>{option}</option>)}
+        </select>
         {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
     </div>
 );
@@ -74,9 +133,9 @@ export default function Checkout() {
 
     // Guest contact email — name/phone come from the shipping address, no need to ask twice
     const [guestContact, setGuestContact] = useState({ email: '' });
+    const [citySelection, setCitySelection] = useState('');
 
     // ── Shipping / Courier Selection State ───────────────────
-    const [shippingCouriers, setShippingCouriers] = useState([]);
     const [selectedCourier, setSelectedCourier] = useState(null);
     const [shippingLoading, setShippingLoading] = useState(false);
     const [shippingError, setShippingError] = useState('');
@@ -143,7 +202,6 @@ export default function Checkout() {
             setShippingLoading(true);
             setShippingError('');
             setSelectedCourier(null);
-            setShippingCouriers([]);
             try {
                 const items = cart.items.map(item => ({
                     productId: item.product?._id || item.product,
@@ -152,15 +210,15 @@ export default function Checkout() {
                 }));
                 const { data } = await orderAPI.calculateShipping(pincode, items);
                 const couriers = data?.data?.couriers || [];
-                setShippingCouriers(couriers);
-                // Auto-select recommended (cheapest) courier
-                const recommended = couriers.find(c => c.recommended) || couriers[0];
-                if (recommended) setSelectedCourier(recommended);
+                const bestCourier = [...couriers].sort((a, b) => {
+                    const deliveryDifference = Number(a.estimated_delivery_days || Infinity) - Number(b.estimated_delivery_days || Infinity);
+                    return deliveryDifference || Number(a.rate || Infinity) - Number(b.rate || Infinity);
+                })[0];
+                if (bestCourier) setSelectedCourier(bestCourier);
                 setLastCheckedPincode(pincode);
             } catch (err) {
                 const msg = err.response?.data?.message || 'Failed to calculate shipping';
                 setShippingError(msg);
-                setShippingCouriers([]);
             } finally {
                 setShippingLoading(false);
             }
@@ -190,6 +248,20 @@ export default function Checkout() {
         }
     };
 
+    const handleStateSelect = (e) => {
+        const state = e.target.value;
+        setCitySelection('');
+        setAddress(prev => ({ ...prev, state, city: '' }));
+        if (errors.state || errors.city) setErrors(prev => ({ ...prev, state: '', city: '' }));
+    };
+
+    const handleCitySelect = (e) => {
+        const city = e.target.value;
+        setCitySelection(city);
+        setAddress(prev => ({ ...prev, city: city === 'Other city' ? '' : city }));
+        if (errors.city) setErrors(prev => ({ ...prev, city: '' }));
+    };
+
     const handleGuestChange = (e) => {
         const { name, value } = e.target;
         setGuestContact(prev => ({ ...prev, [name]: value }));
@@ -208,7 +280,7 @@ export default function Checkout() {
         else if (!/^\d{6}$/.test(address.zipCode.trim())) errs.zipCode = 'Enter a valid 6-digit ZIP code';
 
         // Courier selection validation
-        if (!selectedCourier) errs.courier = 'Please select a delivery option';
+        if (!selectedCourier) errs.courier = 'Please enter a deliverable ZIP code';
 
         // Guest-specific validation (name/phone already validated above via the shared address fields)
         if (!isAuthenticated) {
@@ -263,6 +335,20 @@ export default function Checkout() {
         }
 
         const { orderId, orderNumber, razorpayOrderId, amount, currency } = orderData;
+        let paymentAttemptFinished = false;
+
+        const cancelPaymentAttempt = async (reason) => {
+            if (paymentAttemptFinished) return;
+            paymentAttemptFinished = true;
+
+            try {
+                await orderAPI.cancelRazorpayPayment(orderId);
+            } catch (cancelErr) {
+                console.error('Failed to cancel pending payment order', cancelErr);
+            }
+
+            toast.error(reason);
+        };
 
         // 3. Open Razorpay Checkout
         const options = {
@@ -291,6 +377,7 @@ export default function Checkout() {
                     });
 
                     // Payment verified successfully
+                    paymentAttemptFinished = true;
                     window.dispatchEvent(new Event('cartUpdated'));
                     navigate('/order-success', {
                         state: {
@@ -312,23 +399,17 @@ export default function Checkout() {
                 }
             },
             modal: {
-                ondismiss: () => {
-                    toast.error('Payment cancelled. Your order is pending.');
-                    // Navigate to failure page with cancellation info
-                    navigate('/order-failure', {
-                        state: {
-                            orderNumber,
-                            orderId,
-                            reason: 'Payment was cancelled by user',
-                        }
-                    });
+                ondismiss: async () => {
+                    await cancelPaymentAttempt('Payment cancelled. No order was placed.');
+                    navigate('/checkout', { replace: true });
                 },
             },
         };
 
         const rzp = new window.Razorpay(options);
-        rzp.on('payment.failed', (response) => {
+        rzp.on('payment.failed', async (response) => {
             console.error('Razorpay payment failed', response.error);
+            await cancelPaymentAttempt(response.error?.description || 'Payment failed. No order was placed.');
             navigate('/order-failure', {
                 state: {
                     orderNumber,
@@ -374,6 +455,20 @@ export default function Checkout() {
         }
 
         const { orderId, orderNumber, razorpayOrderId, amount, currency } = orderData;
+        let paymentAttemptFinished = false;
+
+        const cancelPaymentAttempt = async (reason) => {
+            if (paymentAttemptFinished) return;
+            paymentAttemptFinished = true;
+
+            try {
+                await orderAPI.cancelGuestRazorpayPayment(orderId, shippingAddress.phone);
+            } catch (cancelErr) {
+                console.error('Failed to cancel guest pending payment order', cancelErr);
+            }
+
+            toast.error(reason);
+        };
 
         const options = {
             key: import.meta.env.VITE_RAZORPAY_PUBLIC_ID,
@@ -398,6 +493,7 @@ export default function Checkout() {
                     });
 
                     if (!isExpress) guestCartService.clearCart();
+                    paymentAttemptFinished = true;
                     toast.success('Order placed successfully! 🎉');
                     navigate('/order-success', {
                         state: { orderNumber, orderId, amount, paymentId: response.razorpay_payment_id }
@@ -410,14 +506,16 @@ export default function Checkout() {
                 }
             },
             modal: {
-                ondismiss: () => {
-                    toast.error('Payment cancelled.');
+                ondismiss: async () => {
+                    await cancelPaymentAttempt('Payment cancelled. No order was placed.');
+                    navigate('/checkout', { replace: true });
                 },
             },
         };
 
         const rzp = new window.Razorpay(options);
-        rzp.on('payment.failed', (response) => {
+        rzp.on('payment.failed', async (response) => {
+            await cancelPaymentAttempt(response.error?.description || 'Payment failed. No order was placed.');
             navigate('/order-failure', {
                 state: { orderNumber, orderId, reason: response.error?.description || 'Payment failed' }
             });
@@ -458,23 +556,29 @@ export default function Checkout() {
     }
 
     const totalPrice = cart?.totalPrice || 0;
-    const shipping = selectedCourier ? selectedCourier.rate : 0; // real courier cost — on us, not charged to the customer
     const total = totalPrice;
 
     // ── Sugar offer: 1 kg free sugar per full 1 kg of tea, repeating ──
     const { sugarKg, remainingG } = getSugarOffer(cart?.items || []);
     const qualifiesForSugar = sugarKg > 0;
+    const remainingTeaLabel = remainingG >= 1000 ? `${Number((remainingG / 1000).toFixed(2))} kg` : `${remainingG} g`;
 
     return (
-        <div className="min-h-screen bg-[#F9F9F9] pt-28 pb-16 font-sans text-[#1A1A1A]">
-            <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_#edf5e8,_#faf9f6_42%,_#f4efe6)] pt-28 pb-16 font-sans text-[#1A1A1A]">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
                 {/* Header */}
-                <div className="mb-5">
+                <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                    <div>
                     <Link to="/cart" className="inline-flex items-center gap-2 text-sm font-bold text-gray-500 hover:text-[#385040] transition-colors uppercase tracking-wide mb-3">
                         <ArrowLeft className="w-4 h-4" /> Back to Cart
                     </Link>
-                    <h1 className="font-display text-3xl font-bold">Checkout</h1>
+                    <h1 className="font-display text-4xl font-bold tracking-tight">Checkout</h1>
+                    <p className="mt-1 text-sm text-gray-500">Your tea is reserved. Finish in two secure steps.</p>
+                    </div>
+                    <div className="inline-flex items-center gap-2 rounded-full border border-[#385040]/10 bg-white/80 px-4 py-2 text-xs font-bold text-[#385040] shadow-sm">
+                        <ShieldCheck className="h-4 w-4" /> Secure payment · Free delivery
+                    </div>
                 </div>
 
                 <div className="lg:grid lg:grid-cols-12 gap-8 items-start">
@@ -483,7 +587,7 @@ export default function Checkout() {
                     <div className="lg:col-span-7 space-y-5">
 
                         {/* Shipping Address (+ contact email for guests, folded in — no need to re-ask for name/phone) */}
-                        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 sm:p-6">
+                        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-white/95 rounded-2xl border border-white shadow-[0_18px_45px_-28px_rgba(31,45,35,0.45)] p-5 sm:p-7">
                             <div className="flex items-center gap-3 mb-4">
                                 <div className="w-7 h-7 rounded-full bg-[#385040] text-white flex items-center justify-center text-xs font-bold">1</div>
                                 <h2 className="font-display text-lg font-bold">{isAuthenticated ? 'Shipping Address' : 'Contact & Shipping Address'}</h2>
@@ -536,26 +640,40 @@ export default function Checkout() {
                                     autoComplete="street-address"
                                     required
                                 />
-                                <InputField
-                                    label="City"
-                                    name="city"
-                                    placeholder="Mumbai"
-                                    value={address.city}
-                                    onChange={handleChange}
-                                    error={errors.city}
-                                    autoComplete="address-level2"
-                                    required
-                                />
-                                <InputField
+                                <SelectField
                                     label="State"
                                     name="state"
-                                    placeholder="Maharashtra"
                                     value={address.state}
-                                    onChange={handleChange}
+                                    onChange={handleStateSelect}
                                     error={errors.state}
-                                    autoComplete="address-level1"
+                                    options={Object.keys(INDIA_LOCATIONS)}
+                                    placeholder="Select your state"
                                     required
                                 />
+                                <SelectField
+                                    label="City"
+                                    name="city"
+                                    value={citySelection}
+                                    onChange={handleCitySelect}
+                                    error={citySelection === 'Other city' ? undefined : errors.city}
+                                    options={[...(INDIA_LOCATIONS[address.state] || []), 'Other city']}
+                                    placeholder={address.state ? 'Select your city' : 'Select a state first'}
+                                    disabled={!address.state}
+                                    required
+                                />
+                                {citySelection === 'Other city' && (
+                                    <InputField
+                                        label="City name"
+                                        name="city"
+                                        placeholder="Enter your city"
+                                        value={address.city}
+                                        onChange={handleChange}
+                                        error={errors.city}
+                                        autoComplete="address-level2"
+                                        colSpan="sm:col-span-2"
+                                        required
+                                    />
+                                )}
                                 <InputField
                                     label="ZIP Code"
                                     name="zipCode"
@@ -576,81 +694,27 @@ export default function Checkout() {
                                     autoComplete="country-name"
                                 />
                             </div>
-                        </motion.div>
 
-                        {/* Delivery Options */}
-                        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 sm:p-6">
-                            <div className="flex items-center gap-3 mb-4">
-                                <div className="w-7 h-7 rounded-full bg-[#385040] text-white flex items-center justify-center text-xs font-bold">2</div>
-                                <h2 className="font-display text-lg font-bold">Delivery Options</h2>
+                            <div className={`mt-5 flex items-center gap-3 rounded-xl border p-3.5 ${shippingError ? 'border-red-200 bg-red-50 text-red-700' : 'border-[#385040]/10 bg-[#f3f8f0] text-[#385040]'}`}>
+                                {shippingLoading ? <Loader2 className="w-4 h-4 animate-spin shrink-0" /> : <Truck className="w-4 h-4 shrink-0" />}
+                                <div className="text-xs leading-relaxed">
+                                    <p className="font-bold">{shippingError ? 'Delivery unavailable' : 'Complimentary delivery, automatically arranged'}</p>
+                                    <p className={shippingError ? 'text-red-600/80' : 'text-[#385040]/70'}>
+                                        {shippingError
+                                            ? shippingError
+                                            : selectedCourier
+                                                ? 'We will use the quickest available service for your postcode.'
+                                                : 'Enter your six-digit ZIP code and we will confirm delivery for your address.'}
+                                    </p>
+                                </div>
                             </div>
-
-                            {!address.zipCode || address.zipCode.length < 6 ? (
-                                <div className="text-center py-6 text-gray-400 text-sm">
-                                    <Truck className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                                    <p>Enter your ZIP code to see delivery options</p>
-                                </div>
-                            ) : shippingLoading ? (
-                                <div className="text-center py-6">
-                                    <div className="w-6 h-6 border-2 border-[#385040] border-t-transparent rounded-full animate-spin mx-auto mb-2" />
-                                    <p className="text-sm text-gray-500">Checking delivery options...</p>
-                                </div>
-                            ) : shippingError ? (
-                                <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
-                                    {shippingError}
-                                </div>
-                            ) : shippingCouriers.length > 0 ? (
-                                <div className="grid gap-3">
-                                    {shippingCouriers.map((courier) => {
-                                        const isSelected = selectedCourier?.courier_company_id === courier.courier_company_id;
-                                        return (
-                                            <button
-                                                type="button"
-                                                key={courier.courier_company_id}
-                                                onClick={() => setSelectedCourier(courier)}
-                                                className={`flex items-center gap-3 p-3.5 rounded-xl border transition-all text-left ${isSelected
-                                                    ? 'border-[#385040] bg-[#385040]/5 shadow-sm'
-                                                    : 'border-gray-200 hover:border-gray-300'
-                                                    }`}
-                                            >
-                                                <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${isSelected ? 'bg-[#385040] text-white' : 'bg-gray-100 text-gray-500'}`}>
-                                                    <Truck className="w-4 h-4" />
-                                                </div>
-                                                <div className="flex-1 min-w-0">
-                                                    <div className="flex items-center gap-2">
-                                                        <p className="font-bold text-sm text-[#1A1A1A]">{courier.courier_name}</p>
-                                                        {courier.recommended && (
-                                                            <span className="text-[10px] font-semibold bg-green-100 text-green-700 px-1.5 py-0.5 rounded">Recommended</span>
-                                                        )}
-                                                    </div>
-                                                    <span className="text-xs text-gray-400 flex items-center gap-1 mt-0.5">
-                                                        <Clock className="w-3 h-3" />
-                                                        {courier.estimated_delivery_days} day{courier.estimated_delivery_days > 1 ? 's' : ''}
-                                                    </span>
-                                                </div>
-                                                <span className="text-[10px] font-bold uppercase tracking-wide text-green-600 bg-green-50 border border-green-200 rounded-full px-2 py-0.5 shrink-0">
-                                                    Free
-                                                </span>
-                                                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${isSelected ? 'border-[#385040]' : 'border-gray-300'}`}>
-                                                    {isSelected && <div className="w-2.5 h-2.5 rounded-full bg-[#385040]" />}
-                                                </div>
-                                            </button>
-                                        );
-                                    })}
-                                </div>
-                            ) : (
-                                <div className="text-center py-6 text-gray-400 text-sm">
-                                    <Truck className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                                    <p>No delivery options available for this pincode</p>
-                                </div>
-                            )}
                             {errors.courier && <p className="text-red-500 text-xs mt-2">{errors.courier}</p>}
                         </motion.div>
 
                         {/* Payment Method */}
-                        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 sm:p-6">
+                        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="bg-white/95 rounded-2xl border border-white shadow-[0_18px_45px_-28px_rgba(31,45,35,0.45)] p-5 sm:p-7">
                             <div className="flex items-center gap-3 mb-4">
-                                <div className="w-7 h-7 rounded-full bg-[#385040] text-white flex items-center justify-center text-xs font-bold">3</div>
+                                <div className="w-7 h-7 rounded-full bg-[#385040] text-white flex items-center justify-center text-xs font-bold">2</div>
                                 <h2 className="font-display text-lg font-bold">Payment Method</h2>
                             </div>
 
@@ -670,7 +734,7 @@ export default function Checkout() {
 
                     {/* RIGHT: Order Summary */}
                     <div className="lg:col-span-5 mt-8 lg:mt-0">
-                        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 sm:p-6 sticky top-32">
+                        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="bg-white/95 rounded-2xl border border-white shadow-[0_18px_45px_-28px_rgba(31,45,35,0.45)] p-5 sm:p-7 sticky top-32">
                             <h2 className="font-display text-xl font-bold text-[#1A1A1A] mb-6 border-b border-gray-100 pb-4">Order Summary</h2>
 
                             {/* Items */}
@@ -696,17 +760,8 @@ export default function Checkout() {
                                     <span className="font-bold">₹{totalPrice.toFixed(2)}</span>
                                 </div>
                                 <div className="flex justify-between items-center text-sm text-gray-600">
-                                    <span>Delivery Charge</span>
-                                    {selectedCourier ? (
-                                        <span className="flex items-center gap-2">
-                                            <span className="text-gray-400 line-through decoration-2">₹{shipping.toFixed(2)}</span>
-                                            <span className="text-[10px] font-bold uppercase tracking-wide text-green-600 bg-green-50 border border-green-200 rounded-full px-2 py-0.5">
-                                                Free — on us
-                                            </span>
-                                        </span>
-                                    ) : (
-                                        <span className="text-gray-400">Select courier</span>
-                                    )}
+                                    <span className="flex items-center gap-1.5"><Truck className="w-3.5 h-3.5 text-[#385040]" /> Delivery</span>
+                                    <span className="text-[10px] font-bold uppercase tracking-wide text-green-600 bg-green-50 border border-green-200 rounded-full px-2 py-0.5">Complimentary</span>
                                 </div>
                                 {qualifiesForSugar && (
                                     <div className="flex justify-between text-sm text-green-600">
@@ -716,7 +771,7 @@ export default function Checkout() {
                                 )}
                                 <div className="flex items-center gap-2 text-xs text-amber-600 bg-amber-50 border border-amber-100 rounded-lg p-2 mt-1">
                                     <Gift className="w-3.5 h-3.5 shrink-0" />
-                                    <span>Add {remainingG} g more tea to get <strong>FREE {sugarKg + 1} Kg Sugar!</strong></span>
+                                    <span>Add {remainingTeaLabel} more tea to receive <strong>another 1 kg sugar pack.</strong></span>
                                 </div>
                             </div>
 

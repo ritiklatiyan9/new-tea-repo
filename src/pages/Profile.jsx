@@ -78,18 +78,18 @@ export default function Profile() {
     const tabBtn = (tab, icon, label) => (
         <button
             onClick={() => setActiveTab(tab)}
-            className={`w-full py-3 px-4 rounded-xl flex items-center gap-3 transition-colors ${activeTab === tab
-                ? 'bg-[#22382B] text-white shadow-lg shadow-[#22382B]/20'
-                : 'hover:bg-[#F2EDE3] text-gray-600'
+            className={`w-full py-3.5 px-4 rounded-2xl flex items-center gap-3 transition-all border ${activeTab === tab
+                ? 'bg-[#22382B] text-white border-[#22382B] shadow-md shadow-[#22382B]/25'
+                : 'bg-white/60 text-[#22382B] border-transparent hover:border-[#22382B]/20 hover:bg-white'
                 }`}
         >
             {icon}
-            <span className="font-bold text-sm">{label}</span>
+            <span className="font-bold text-sm tracking-wide">{label}</span>
         </button>
     );
 
     return (
-        <div className="min-h-screen pt-28 pb-16 px-4 sm:px-6 lg:px-8 bg-[#F2EDE3]">
+        <div className="min-h-screen pt-32 pb-14 px-4 sm:px-6 lg:px-8 bg-[#FAF8F4]">
             <SEOHelmet
                 title="My Profile | Chai Adda"
                 description="Manage your Chai Adda profile and preferences."
@@ -100,31 +100,34 @@ export default function Profile() {
 
                 {/* Header */}
                 <motion.div variants={itemVariants} className="mb-8 text-center">
-                    <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[#385040]/20 bg-white/50 text-[#385040]/80 text-[10px] font-sans font-bold uppercase tracking-[0.3em]">
+                    <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[#385040]/20 bg-white/60 text-[#385040]/80 text-[10px] font-sans font-bold uppercase tracking-[0.3em]">
                         Chai Adda Member
                     </span>
                     <h1 className="font-display font-bold text-4xl sm:text-5xl text-[#22382B] mt-4">My Account</h1>
+                    <p className="text-gray-500 mt-3 max-w-xl mx-auto">Manage your profile, track support history, and keep your account secure in one place.</p>
                 </motion.div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
 
                     {/* Sidebar Card */}
                     <motion.div variants={itemVariants} className="lg:col-span-1">
-                        <div className="bg-white rounded-3xl shadow-xl shadow-[#22382B]/5 border border-gray-100 sticky top-28 overflow-hidden">
+                        <div className="rounded-3xl bg-[#f6fff7] border border-[#dbe6dc] shadow-lg shadow-[#22382B]/10 sticky top-28 overflow-hidden">
                             {/* Decorative banner */}
                             <div className="h-24 bg-gradient-to-br from-[#2A4233] via-[#385040] to-[#22382B] relative">
-                                <div className="absolute inset-0 opacity-[0.15]" style={{ backgroundImage: 'radial-gradient(circle at 20% 50%, #C4D6B0 0%, transparent 40%)' }} />
+                                <div className="absolute inset-0 opacity-[0.2]" style={{ backgroundImage: 'radial-gradient(circle at 20% 50%, #C4D6B0 0%, transparent 40%)' }} />
                             </div>
 
                             <div className="flex flex-col items-center text-center px-6 pb-6 -mt-12">
                                 {/* Initials avatar */}
-                              
+                                <div className="w-20 h-20 rounded-full bg-white shadow-lg border border-[#e3efe3] flex items-center justify-center text-[#22382B] font-black text-2xl uppercase">
+                                    {initialsOf(user?.name)}
+                                </div>
 
                                 <h2 className="font-display font-bold text-xl text-[#22382B] mt-4">{user?.name || 'Tea Lover'}</h2>
-                                <p className="text-xs text-gray-500  mt-10 font-medium mt-1 flex items-center gap-1.5">
+                                <p className="text-xs text-gray-500 mt-1 flex items-center gap-1.5">
                                     <Mail className="w-3 h-3" />  Email : {user?.email}
                                 </p>
-                                <span className={`mt-3 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest ${user?.role === 'admin' ? 'bg-amber-50 text-amber-600 border border-amber-200' : 'bg-[#F2EDE3] text-[#385040] border border-[#385040]/15'}`}>
+                                <span className={`mt-3 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest ${user?.role === 'admin' ? 'bg-amber-50 text-amber-600 border border-amber-200' : 'bg-white text-[#385040] border border-[#385040]/20'}`}>
                                     {user?.role === 'admin' ? 'Administrator' : 'Tea Enthusiast'}
                                 </span>
 
@@ -145,7 +148,7 @@ export default function Profile() {
 
                     {/* Main Content */}
                     <motion.div variants={itemVariants} className="lg:col-span-2">
-                        <div className="bg-white rounded-3xl p-6 sm:p-9 shadow-xl shadow-[#22382B]/5 border border-gray-100 min-h-[400px]">
+                        <div className="bg-white rounded-3xl p-6 sm:p-9 shadow-lg shadow-[#22382B]/8 border border-[#e8ece5] min-h-[500px]">
                             {activeTab === 'profile' ? (
                                 <>
                                     <div className="flex items-center justify-between mb-8">
@@ -174,7 +177,7 @@ export default function Profile() {
                                                     value={formData.name}
                                                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                                     disabled={!isEditing}
-                                                    className="w-full bg-[#F2EDE3]/60 border border-gray-200 rounded-xl py-4 pl-12 pr-4 font-medium text-[#22382B] focus:outline-none focus:border-[#385040] focus:ring-1 focus:ring-[#385040] transition-all disabled:opacity-75 disabled:cursor-not-allowed"
+                                                className="w-full bg-[#faf8f4] border border-gray-200 rounded-xl py-4 pl-12 pr-4 font-medium text-[#22382B] focus:outline-none focus:border-[#385040] focus:ring-1 focus:ring-[#385040] transition-all disabled:opacity-75 disabled:cursor-not-allowed"
                                                 />
                                             </div>
                                         </div>
@@ -188,13 +191,13 @@ export default function Profile() {
                                                     value={formData.email}
                                                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                                                     disabled={!isEditing}
-                                                    className="w-full bg-[#F2EDE3]/60 border border-gray-200 rounded-xl py-4 pl-12 pr-4 font-medium text-[#22382B] focus:outline-none focus:border-[#385040] focus:ring-1 focus:ring-[#385040] transition-all disabled:opacity-75 disabled:cursor-not-allowed"
+                                                className="w-full bg-[#faf8f4] border border-gray-200 rounded-xl py-4 pl-12 pr-4 font-medium text-[#22382B] focus:outline-none focus:border-[#385040] focus:ring-1 focus:ring-[#385040] transition-all disabled:opacity-75 disabled:cursor-not-allowed"
                                                 />
                                             </div>
                                         </div>
 
                                         {/* Account status row */}
-                                        <div className="flex items-center gap-3 rounded-xl bg-[#F2EDE3]/60 border border-gray-100 px-4 py-3">
+                                        <div className="flex items-center gap-3 rounded-xl bg-[#F8FAF5] border border-[#eaeff0] px-4 py-3">
                                             <ShieldCheck className="w-5 h-5 text-[#385040] shrink-0" />
                                             <p className="text-xs text-gray-500">Your account is secured. Update your details anytime.</p>
                                         </div>
@@ -218,7 +221,7 @@ export default function Profile() {
                                 <>
                                     <div className="flex items-center justify-between mb-8">
                                         <h3 className="font-display font-bold text-2xl text-[#22382B]">My Complaints</h3>
-                                        <div className="text-sm text-gray-500">{complaints.length} Total</div>
+                                        <div className="text-sm text-gray-500 bg-white border border-gray-100 rounded-full px-3 py-1">{complaints.length} Total</div>
                                     </div>
 
                                     {loadingComplaints ? (
@@ -226,7 +229,7 @@ export default function Profile() {
                                             <Loader2 className="w-8 h-8 animate-spin text-[#385040]" />
                                         </div>
                                     ) : complaints.length === 0 ? (
-                                        <div className="text-center py-12 bg-[#F2EDE3]/50 rounded-2xl border-2 border-dashed border-gray-200">
+                                        <div className="text-center py-12 bg-[#FAFBF8] rounded-2xl border-2 border-dashed border-gray-200">
                                             <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm">
                                                 <MessageSquare className="w-8 h-8 text-gray-300" />
                                             </div>
@@ -243,7 +246,7 @@ export default function Profile() {
                                                     key={complaint._id}
                                                     initial={{ opacity: 0, y: 10 }}
                                                     animate={{ opacity: 1, y: 0 }}
-                                                    className="bg-white border border-gray-100 rounded-xl p-6 hover:shadow-md transition-shadow"
+                                                    className="bg-[#fafcf9] border border-gray-100 rounded-xl p-6 hover:shadow-md transition-shadow"
                                                 >
                                                     <div className="flex justify-between items-start mb-3">
                                                         <div className="flex items-center gap-3">
@@ -258,7 +261,7 @@ export default function Profile() {
                                                     </div>
 
                                                     <h4 className="font-bold text-lg text-[#22382B] mb-2">{complaint.subject}</h4>
-                                                    <p className="text-gray-600 text-sm leading-relaxed mb-4 bg-[#F2EDE3]/50 p-3 rounded-lg">{complaint.message}</p>
+                                                    <p className="text-gray-600 text-sm leading-relaxed mb-4 bg-[#FAFBF8] p-3 rounded-lg">{complaint.message}</p>
 
                                                     {complaint.adminResponse && (
                                                         <div className="border-t border-gray-100 pt-4 mt-4">

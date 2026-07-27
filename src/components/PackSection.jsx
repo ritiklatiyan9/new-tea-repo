@@ -33,13 +33,15 @@ export default function PackSection() {
               className="relative z-20 mx-auto w-64 sm:w-80 md:w-96"
             >
               <div className="absolute inset-0 bg-black/20 blur-xl rounded-full transform scale-90 translate-y-10" />
-              <img
-                src="https://images.unsplash.com/photo-1597481499750-3e6b22637e12?auto=format&fit=crop&q=75&w=896&fm=webp"
-                alt="Premium Tea Pack"
-                width="448"
-                height="298"
-                loading="lazy"
-                className="w-full h-auto rounded-2xl shadow-2xl relative z-10 transform transition-transform duration-700 group-hover:scale-105"
+              <video
+                src="/videos/assam-tea-garden.mp4"
+                autoPlay
+                loop
+                muted
+                playsInline
+                preload="metadata"
+                aria-label="Tea garden in Assam"
+                className="w-full aspect-[3/2] object-cover rounded-2xl shadow-2xl relative z-10 transform transition-transform duration-700 group-hover:scale-105"
               />
             </motion.div>
 

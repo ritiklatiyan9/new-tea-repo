@@ -49,8 +49,8 @@ export default function Home() {
   return (
     <div ref={containerRef} className="relative bg-[#385040] overflow-x-clip">
       <SEOHelmet
-        title="Best Chai in India | Order Premium Organic Tea Online"
-        description="India's premium online chai brand. Order authentic masala chai, organic green tea, and herbal blends online. Pan-India delivery to all states and cities."
+        title="Chai Adda | Premium Organic Tea & Chai Online in India"
+        description="Chai Adda brings authentic masala chai, organic green tea and premium loose-leaf blends to your door, with pan-India delivery."
         url="https://www.chaiadda.co.in/"
         schema={[
           {
@@ -103,14 +103,14 @@ export default function Home() {
             </Link>
           </div>
 
-          <div className="flex flex-col sm:flex-row flex-wrap justify-center gap-4 sm:gap-6 lg:gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
             {featuredTeas.map((product, i) => (
               <ScrollReveal
                 key={product._id || product.id || i}
                 delay={i * 0.1}
-                className="h-full text-left w-full sm:w-[calc(50%-0.75rem)] lg:w-[calc(33.333%-1.33rem)] xl:w-[400px] max-w-lg"
+                className="h-full"
               >
-                <ProductCard product={product} />
+                <ProductCard product={product} variant="horizontal" />
               </ScrollReveal>
             ))}
           </div>

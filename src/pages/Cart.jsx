@@ -131,6 +131,12 @@ export default function Cart() {
     // ── Sugar offer: 1 kg free sugar per full 1 kg of tea, repeating ──
     const { totalWeightGrams, sugarKg, remainingG, progressPct } = getSugarOffer(cartItems);
     const qualifiesForSugar = sugarKg > 0;
+    const formatWeight = (grams) => grams >= 1000
+        ? `${Number((grams / 1000).toFixed(2))} kg`
+        : `${grams} g`;
+    const teaWeightLabel = formatWeight(totalWeightGrams);
+    const remainingWeightLabel = formatWeight(remainingG);
+    const nextMilestoneLabel = formatWeight((sugarKg + 1) * 1000);
 
     // Empty cart
     if (cartItems.length === 0) {
@@ -268,13 +274,13 @@ export default function Cart() {
                                                     <Gift className="w-8 h-8 text-green-600" />
                                                 </div>
                                                 <div className="flex flex-col justify-center">
-                                                    <span className="font-display text-lg font-bold text-[#1A1A1A] mb-1">Sugar ({sugarKg} Kg Packet{sugarKg > 1 ? 's' : ''})</span>
-                                                    <span className="text-[10px] font-bold text-green-600 uppercase tracking-widest mb-1">Complimentary — Unlocked 🎉</span>
-                                                    <span className="text-xs text-green-600 font-semibold">Free with your order</span>
+                                                    <span className="font-display text-lg font-bold text-[#1A1A1A] mb-1">{sugarKg} kg Complimentary Sugar</span>
+                                                    <span className="text-[10px] font-bold text-green-600 uppercase tracking-widest mb-1">Reward unlocked</span>
+                                                    <span className="text-xs text-green-600 font-semibold">Earned with {teaWeightLabel} of tea in your cart</span>
                                                 </div>
                                             </div>
                                             <div className="sm:col-span-3 flex justify-start sm:justify-center">
-                                                <span className="text-sm font-bold text-gray-500">Qty: {sugarKg}</span>
+                                                <span className="text-sm font-bold text-gray-500">{sugarKg} × 1 kg pack{sugarKg > 1 ? 's' : ''}</span>
                                             </div>
                                             <div className="sm:col-span-3 flex justify-between sm:justify-end items-center sm:block">
                                                 <span className="text-sm font-bold text-gray-500 sm:hidden">Total:</span>
@@ -293,14 +299,15 @@ export default function Cart() {
                                     exit={{ opacity: 0 }}
                                     className="p-4 sm:p-6 border-t border-amber-100 bg-amber-50/50"
                                 >
-                                    <div className="flex items-start gap-3 mb-3">
+                                    <div className="flex items-start gap-3 mb-4">
                                         <Gift className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
                                         <div className="flex-1">
-                                            <p className="text-sm font-bold text-[#1A1A1A]">
-                                                Add <span className="text-amber-600">{remainingG >= 1000 ? `${(remainingG / 1000).toFixed(2)} kg` : `${remainingG} g`}</span> more tea to unlock <span className="text-green-600">FREE {sugarKg + 1} Kg Sugar!</span>
-                                            </p>
-                                            <p className="text-[10px] text-gray-400 mt-0.5">
-                                                {sugarKg > 0 ? 'Every extra 1 KG of tea unlocks another 1 KG of free sugar' : 'Offer applies when cart reaches 1 KG (e.g. 4 × 250 g packets)'}
+                                            <div className="flex flex-wrap items-center justify-between gap-2">
+                                                <p className="text-sm font-bold text-[#1A1A1A]">Next sugar reward</p>
+                                                <span className="rounded-full bg-amber-100 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-amber-700">{remainingWeightLabel} to go</span>
+                                            </div>
+                                            <p className="text-xs text-gray-500 mt-1">
+                                                Add <span className="font-semibold text-amber-700">{remainingWeightLabel}</span> more tea to receive <span className="font-semibold text-green-600">another 1 kg sugar pack</span> at no cost.
                                             </p>
                                         </div>
                                     </div>
@@ -312,7 +319,10 @@ export default function Cart() {
                                             transition={{ duration: 0.5 }}
                                         />
                                     </div>
-                                    <p className="text-[10px] text-amber-600 font-semibold mt-1 text-right">{totalWeightGrams} g / {(sugarKg + 1) * 1000} g</p>
+                                    <div className="mt-2 flex items-center justify-between text-[10px] font-semibold text-gray-500">
+                                        <span>Cart weight: {teaWeightLabel} tea</span>
+                                        <span>Next reward at {nextMilestoneLabel}</span>
+                                    </div>
                                 </motion.div>
                             </AnimatePresence>
                         </div>
@@ -334,7 +344,7 @@ export default function Cart() {
                                 </div>
                                 {qualifiesForSugar && (
                                     <div className="flex justify-between text-sm text-green-600">
-                                        <span className="flex items-center gap-1"><Gift className="w-3 h-3" /> Sugar × {sugarKg} Kg (Free)</span>
+                                        <span className="flex items-center gap-1"><Gift className="w-3 h-3" /> Complimentary sugar ({sugarKg} kg)</span>
                                         <span className="font-bold">₹0.00</span>
                                     </div>
                                 )}

@@ -13,7 +13,9 @@ const SEOHelmet = ({
   breadcrumbs = [],
   lang = 'en-IN'
 }) => {
-  const defaultKeywords = "best chai india, order chai online india, buy organic tea online india, premium masala chai india, chai delivery all over india, best tea brand india, authentic indian chai online, order tea online india, chai adda, organic tea india, masala chai india, green tea india, herbal chai india, loose leaf tea india, best chai 2025 india, pan india chai delivery, nationwide tea delivery india, बेस्ट चाय इंडिया, ऑर्गेनिक चाय, चाय ऑर्डर करें, भारत में चाय ऑनलाइन, मसाला चाय इंडिया, हर्बल चाय भारत, प्रीमियम चाय ऑनलाइन";
+  const siteUrl = 'https://www.chaiadda.co.in';
+  const canonicalUrl = url === `${siteUrl}/` ? siteUrl : url;
+  const defaultKeywords = "Chai Adda, premium tea India, buy tea online India, organic tea, masala chai, loose leaf tea, tea delivery India";
   
   const finalKeywords = keywords || defaultKeywords;
   
@@ -21,12 +23,12 @@ const SEOHelmet = ({
   const organizationStoreSchema = {
     "@context": "https://schema.org",
     "@type": ["Organization", "OnlineStore"],
+    "@id": `${siteUrl}/#organization`,
     "name": "Chai Adda",
-    "url": "https://www.chaiadda.co.in",
-    "logo": "https://www.chaiadda.co.in/chailogo.png",
-    "image": "https://www.chaiadda.co.in/og-image.jpg",
+    "url": siteUrl,
+    "logo": `${siteUrl}/chailogo.png`,
+    "image": `${siteUrl}/og-image.jpg`,
     "description": "India's premium online chai brand. Order authentic masala chai, organic green tea, and herbal blends online. Pan-India delivery to all states and cities.",
-    "telephone": "+919876543210",
     "email": "Namanmzn1996@gmail.com",
     "address": {
       "@type": "PostalAddress",
@@ -44,13 +46,6 @@ const SEOHelmet = ({
       "https://www.instagram.com/chaiadda.co?igsh=eHFhMWM2NGM1cDZv&utm_source=qr",
       "https://www.facebook.com/share/184ioRP2Ne/?mibextid=wwXIfr"
     ],
-    "contactPoint": {
-      "@type": "ContactPoint",
-      "telephone": "+91-98765-43210",
-      "contactType": "customer service",
-      "areaServed": "IN",
-      "availableLanguage": ["English", "Hindi"]
-    },
     "priceRange": "₹",
     "servesCuisine": ["Indian Chai", "Masala Chai", "Organic Tea", "Herbal Tea", "Green Tea", "Loose Leaf Tea"]
   };
@@ -59,15 +54,25 @@ const SEOHelmet = ({
   const websiteSchema = {
     "@context": "https://schema.org",
     "@type": "WebSite",
+    "@id": `${siteUrl}/#website`,
     "name": "Chai Adda",
-    "url": "https://www.chaiadda.co.in",
+    "url": siteUrl,
     "description": "Order premium organic tea online. Pan-India delivery.",
     "inLanguage": ["en-IN", "hi"],
-    "potentialAction": {
-      "@type": "SearchAction",
-      "target": "https://www.chaiadda.co.in/shop?q={search_term_string}",
-      "query-input": "required name=search_term_string"
-    }
+    "publisher": { "@id": `${siteUrl}/#organization` }
+  };
+
+  const webPageSchema = {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "@id": `${canonicalUrl}#webpage`,
+    "url": canonicalUrl,
+    "name": title,
+    "description": description,
+    "inLanguage": lang,
+    "isPartOf": { "@id": `${siteUrl}/#website` },
+    "about": { "@id": `${siteUrl}/#organization` },
+    "primaryImageOfPage": image
   };
 
   // Breadcrumb Schema
@@ -96,7 +101,7 @@ const SEOHelmet = ({
       <meta name="title" content={title} />
       <meta name="description" content={description} />
       <meta name="keywords" content={finalKeywords} />
-      <link rel="canonical" href={url} />
+      <link rel="canonical" href={canonicalUrl} />
 
       {/* Robots Tag */}
       {noindex ? (
@@ -134,12 +139,12 @@ const SEOHelmet = ({
       <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       <link rel="dns-prefetch" href="https://www.google-analytics.com" />
       <link rel="dns-prefetch" href="https://cdn.jsdelivr.net" />
-      <link rel="alternate" hrefLang="en-in" href={url} />
-      <link rel="alternate" hrefLang="x-default" href={url} />
+      <link rel="alternate" hrefLang="en-in" href={canonicalUrl} />
+      <link rel="alternate" hrefLang="x-default" href={canonicalUrl} />
 
       {/* Open Graph Tags */}
       <meta property="og:type" content="website" />
-      <meta property="og:url" content={url} />
+      <meta property="og:url" content={canonicalUrl} />
       <meta property="og:title" content={title} />
       <meta property="og:description" content={description} />
       <meta property="og:image" content={image} />
@@ -151,7 +156,7 @@ const SEOHelmet = ({
 
       {/* Twitter Card Tags */}
       <meta name="twitter:card" content="summary_large_image" />
-      <meta name="twitter:url" content={url} />
+      <meta name="twitter:url" content={canonicalUrl} />
       <meta name="twitter:title" content={title} />
       <meta name="twitter:description" content={description} />
       <meta name="twitter:image" content={image} />
@@ -167,6 +172,11 @@ const SEOHelmet = ({
       {!noindex && (
         <script type="application/ld+json">
           {JSON.stringify(websiteSchema)}
+        </script>
+      )}
+      {!noindex && (
+        <script type="application/ld+json">
+          {JSON.stringify(webPageSchema)}
         </script>
       )}
       {!noindex && breadcrumbSchema && (

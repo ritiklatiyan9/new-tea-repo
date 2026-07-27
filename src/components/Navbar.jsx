@@ -1,10 +1,9 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { NavLink, Link, useNavigate } from 'react-router-dom';
-import { Menu, X, ShoppingBag, ShoppingCart, Search, User, Leaf, Home, Store, ScrollText, Mail, LogOut, Settings, LayoutDashboard, Package, MessageSquare } from 'lucide-react';
+import { Menu, X, ShoppingBag, ShoppingCart, Search, User, Home, Store, ScrollText, Mail, LogOut, Settings, LayoutDashboard, Package, MessageSquare } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
-import confetti from 'canvas-confetti';
 import { cartAPI } from '../services/cartAPI';
 import { guestCartService } from '../services/guestCartService';
 import chailogo from '../assets/chailogo.webp'
@@ -74,46 +73,6 @@ export default function Navbar() {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-
-  const triggerLeafConfetti = () => {
-    // Left side burst
-    confetti({
-      particleCount: 40,
-      angle: 60,
-      spread: 55,
-      origin: { x: 0, y: 0.6 },
-      colors: ['#385040', '#4CAF50', '#8BC34A', '#D4F57B'],
-      shapes: ['circle', 'square'], // canvas-confetti doesn't natively support custom shapes easily without more code, sticking to colors for now or using scalar
-      scalar: 1.2,
-      drift: 0.5,
-      gravity: 1.2,
-      ticks: 200
-    });
-
-    // Right side burst
-    confetti({
-      particleCount: 40,
-      angle: 120,
-      spread: 55,
-      origin: { x: 1, y: 0.6 },
-      colors: ['#385040', '#4CAF50', '#8BC34A', '#D4F57B'],
-      shapes: ['circle', 'square'],
-      scalar: 1.2,
-      drift: -0.5,
-      gravity: 1.2,
-      ticks: 200
-    });
-
-    // Center burst
-    confetti({
-      particleCount: 50,
-      spread: 100,
-      origin: { y: 0.3 },
-      colors: ['#385040', '#4CAF50', '#8BC34A', '#D4F57B'],
-      scalar: 1.5,
-      gravity: 0.8
-    });
-  };
 
   const navLinks = [
     { label: 'Home', path: '/', icon: Home },
@@ -188,14 +147,6 @@ export default function Navbar() {
           >
             <Package className="w-4 h-4 text-black group-hover:text-tea-primary transition-colors" />
           </Link>
-
-          {/* Green Icon Circle (Hidden on mobile) */}
-          <div
-            onClick={triggerLeafConfetti}
-            className="w-10 h-10 rounded-full bg-[#D4F57B] hidden sm:flex items-center justify-center cursor-pointer hover:scale-110 transition-transform active:scale-90"
-          >
-            <Leaf className="w-5 h-5 text-black" />
-          </div>
 
           {/* Login Button / Profile Dropdown (Hidden on mobile) */}
           {isAuthenticated ? (
@@ -300,14 +251,8 @@ export default function Navbar() {
                       </span>
                     </Link>
 
-                    {/* Actions: Leaf + Close */}
+                    {/* Actions: Close */}
                     <div className="flex items-center gap-3">
-                      <button
-                        onClick={triggerLeafConfetti}
-                        className="w-9 h-9 rounded-full bg-[#D4F57B] flex items-center justify-center cursor-pointer hover:scale-110 transition-transform active:scale-90"
-                      >
-                        <Leaf className="w-4 h-4 text-black" />
-                      </button>
                       <button
                         onClick={() => setIsOpen(false)}
                         className="p-2 hover:bg-gray-100 rounded-full transition-colors"

@@ -17,6 +17,7 @@ export const orderAPI = {
     createRazorpayOrder: (shippingAddress, actualShippingCost, selectedCourierId) =>
         api.post('/orders/razorpay/create', { shippingAddress, actualShippingCost, selectedCourierId }),
     verifyRazorpayPayment: (data) => api.post('/orders/razorpay/verify', data),
+    cancelRazorpayPayment: (orderId) => api.post('/orders/razorpay/cancel', { orderId }),
 
     // ── Buy Now (direct purchase, no cart) ────────────────────
     buyNow: (items, shippingAddress, paymentMethod) => api.post('/orders/buy-now', { items, shippingAddress, paymentMethod }),
@@ -27,6 +28,7 @@ export const orderAPI = {
     createGuestOrder: (data) => axios.post(`${BASE_URL}/orders/guest`, data),
     createGuestRazorpayOrder: (data) => axios.post(`${BASE_URL}/orders/guest/razorpay/create`, data),
     verifyGuestRazorpayPayment: (data) => axios.post(`${BASE_URL}/orders/guest/razorpay/verify`, data),
+    cancelGuestRazorpayPayment: (orderId, mobile) => axios.post(`${BASE_URL}/orders/guest/razorpay/cancel`, { orderId, mobile }),
     trackOrders: (mobile) => axios.get(`${BASE_URL}/orders/track`, { params: { mobile } }),
 
     // ── Admin Routes ─────────────────────────────────────────

@@ -18,7 +18,6 @@ const STATIC_ROUTES = [
   { url: '/sustainability', priority: '0.7', changefreq: 'monthly' },
   { url: '/courses', priority: '0.8', changefreq: 'weekly' },
   { url: '/shipping-policy', priority: '0.5', changefreq: 'monthly' },
-  { url: '/track-order', priority: '0.4', changefreq: 'monthly' },
 ];
 
 CITIES.forEach(city => {
@@ -31,7 +30,8 @@ CITIES.forEach(city => {
 
 async function fetchProducts(retries = 3) {
   try {
-    const res = await fetch('https://www.chaiadda.co.in/api/products?limit=500');
+    const productsApiUrl = process.env.SITEMAP_PRODUCTS_API_URL || 'https://mern-tea-backend.vercel.app/api/products';
+    const res = await fetch(productsApiUrl);
     if (!res.ok) {
       throw new Error(`API returned status: ${res.status}`);
     }
@@ -43,8 +43,9 @@ async function fetchProducts(retries = 3) {
     }
     
     const data = await res.json();
-    console.log(`Successfully fetched ${data.products?.length || 0} products from API.`);
-    return data.products || [];
+    const products = Array.isArray(data) ? data : (data.products || data.data || []);
+    console.log(`Successfully fetched ${products.length} products from API.`);
+    return products;
   } catch (error) {
     if (retries > 0) {
       console.warn(`Error fetching products. Retrying... (${retries} attempts left)`);

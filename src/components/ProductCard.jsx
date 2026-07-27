@@ -10,7 +10,7 @@ import confetti from 'canvas-confetti';
 import { getOptimizedCloudinaryUrl } from '@/lib/utils';
 import OfferBadge from '@/components/OfferBadge';
 
-export default function ProductCard({ product, index }) {
+export default function ProductCard({ product, index, variant = 'default' }) {
     const navigate = useNavigate();
     const { isAuthenticated } = useAuth();
     const [adding, setAdding] = useState(false);
@@ -33,6 +33,23 @@ export default function ProductCard({ product, index }) {
     const badge = product.badge || (product.variants?.[0]?.stock < 5 ? 'Low Stock' : null);
     const bgGradient = product.bgGradient || 'from-white to-[#f0fff4]';
     const categoryColor = product.categoryColor || 'text-tea-primary';
+    const isHorizontal = variant === 'horizontal';
+    const cardLayoutClass = isHorizontal
+        ? 'flex lg:flex-row lg:items-stretch'
+        : 'flex flex-col';
+    const imageWrapperClass = isHorizontal
+        ? `relative w-full h-[240px] lg:w-[42%] lg:min-h-[240px] lg:h-full bg-gradient-to-br ${bgGradient} dark:from-white/5 dark:from-white/10 flex items-center justify-center overflow-hidden flex-shrink-0 rounded-t-2xl sm:rounded-t-3xl lg:rounded-l-2xl lg:rounded-tr-none lg:rounded-br-none`
+        : `relative aspect-[4/5] w-full bg-gradient-to-br ${bgGradient} dark:from-white/5 dark:from-white/10 flex items-center justify-center overflow-hidden flex-shrink-0 rounded-t-2xl sm:rounded-t-3xl`;
+    const contentWrapperClass = isHorizontal
+        ? 'px-4 sm:px-6 pb-4 sm:pb-6 pt-3 sm:pt-4 flex flex-col flex-grow bg-[#F4FFF8] dark:bg-[#1A1A1A] rounded-b-2xl sm:rounded-b-3xl lg:rounded-l-none lg:rounded-r-2xl lg:rounded-br-3xl lg:rounded-bl-3xl lg:min-h-[240px]'
+        : 'px-4 sm:px-6 pb-4 sm:pb-6 pt-3 sm:pt-4 flex flex-col flex-grow bg-[#F4FFF8] dark:bg-[#1A1A1A] rounded-b-2xl sm:rounded-b-3xl';
+    const actionsClass = isHorizontal
+        ? 'mt-auto flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between lg:gap-4'
+        : 'mt-auto flex flex-col gap-3';
+    const actionButtonsClass = isHorizontal
+        ? 'grid grid-cols-2 gap-2 lg:grid-cols-1 lg:w-1/2'
+        : 'grid grid-cols-2 gap-2';
+    const addLabel = isHorizontal ? 'Buy' : 'Add';
 
     const triggerCartConfetti = (e) => {
         const origin = e?.currentTarget
@@ -76,10 +93,10 @@ export default function ProductCard({ product, index }) {
     return (
         <motion.div
             onClick={() => navigate(`/product/${id}`)}
-            className="group relative bg-gradient-to-br from-white to-[#f0fff4] dark:from-[#1A1A1A] dark:to-[#1F3324] rounded-2xl sm:rounded-3xl shadow-sm transition-all duration-500 cursor-pointer border border-transparent overflow-hidden h-full flex flex-col"
+            className={`group relative bg-gradient-to-br from-white to-[#f0fff4] dark:from-[#1A1A1A] dark:to-[#1F3324] rounded-2xl sm:rounded-3xl shadow-sm transition-all duration-500 cursor-pointer border border-transparent overflow-hidden h-full ${cardLayoutClass}`}
         >
             {/* Image Container */}
-            <div className={`relative aspect-[4/5] w-full bg-gradient-to-br ${bgGradient} dark:from-white/5 dark:from-white/10 flex items-center justify-center overflow-hidden flex-shrink-0 rounded-t-2xl sm:rounded-t-3xl`}>
+            <div className={imageWrapperClass}>
                 {/* Badge */}
                 {badge && (
                     <div className="absolute top-4 left-4 z-20">
@@ -102,17 +119,17 @@ export default function ProductCard({ product, index }) {
             </div>
 
             {/* Content */}
-            <div className="px-4 sm:px-6 pb-4 sm:pb-6 pt-3 sm:pt-4 flex flex-col flex-grow bg-[#F4FFF8] dark:bg-[#1A1A1A] rounded-b-2xl sm:rounded-b-3xl">
+            <div className={contentWrapperClass}>
                 <div className="flex justify-between items-start mb-3">
                     <div className="flex-grow">
                         <p className={`text-[10px] sm:text-xs font-bold uppercase tracking-wider mb-1 ${categoryColor} min-h-[1.25rem]`}>
                             {category}
                         </p>
-                        <h3 className="font-display font-bold text-base sm:text-xl text-foreground transition-colors leading-tight line-clamp-2 min-h-[2.5rem] sm:min-h-[3.5rem] mt-1 sm:mt-2">
+                    <h3 className="font-display font-bold text-base sm:text-xl text-foreground transition-colors leading-tight line-clamp-2 min-h-[2.5rem] sm:min-h-[3.5rem] mt-1 sm:mt-2">
                             {name}
                         </h3>
                     </div>
-                    
+
                 </div>
 
                 {/* Offer Badge Integration */}
@@ -124,13 +141,13 @@ export default function ProductCard({ product, index }) {
                     {product.description}
                 </p>
 
-                <div className="mt-auto flex flex-col gap-3">
+                <div className={actionsClass}>
                     <div className="flex items-baseline gap-2">
                         <span className="text-xl font-bold text-foreground">₹{Number(price).toFixed(2)}</span>
 
                     </div>
 
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className={actionButtonsClass}>
                         <button
                             onClick={(e) => {
                                 e.stopPropagation();
@@ -149,7 +166,7 @@ export default function ProductCard({ product, index }) {
                             className="bg-[#1A1A1A] text-white px-3 py-2.5 rounded-xl text-xs font-bold shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2 w-full disabled:opacity-70"
                         >
                             {adding ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : (
-                                <><span>Add</span> <ShoppingBag className="w-3.5 h-3.5" /></>
+                                <><span>{addLabel}</span> <ShoppingBag className="w-3.5 h-3.5" /></>
                             )}
                         </button>
                     </div>
